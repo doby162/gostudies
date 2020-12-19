@@ -4,108 +4,52 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"strconv"
+	"os"
 )
 
 func main() {
-	fmt.Println(square(2, 100000))
-	guess := big.NewFloat(1.0)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess)
-	newton(2, guess)
-	fmt.Println(guess.String())
+	answer := newt(2, 20)
+	file, _ := os.Create("./sqrt.txt")
+	defer file.Close()
+	bigstr := fmt.Sprint(answer)
+	file.WriteString(bigstr)
 }
 
-func Sqrt(x float64, i int) float64 {
-	z := 1.0 //our initital guess
-	for ; i > 0; i-- {
-		z = z - (z*z-x)/(2*z)
+func newt(rootOf float64, steps float64) *big.Float {
+	// Since Newton's Method doubles the number of correct digits at each
+	// iteration, we need at least log_2(prec) steps.
+	// steps := int(math.Log2(prec))
+	// but since we actually want to specify the number of steps,
+	// we need the inverse of that equation.
+	// log2(prec)=steps == prec=2^steps
+	// finally, we actually want digits rather than bits,
+	// so we multiply the bits by log2(10)
+	var prec = uint(math.Log2(10) * math.Exp2(steps))
+    // not all digits are going to be correct, but that's ok
+
+	// Compute the square root of 2 using Newton's Method. We start with
+	// an initial estimate for sqrt(2), and then iterate:
+	//     x_{n+1} = 1/2 * ( x_n + (2.0 / x_n) )
+
+	// Initialize values we need for the computation.
+	ro := new(big.Float).SetPrec(prec).SetFloat64(rootOf)
+	half := new(big.Float).SetPrec(prec).SetFloat64(0.5)
+
+	// Use 1 as the initial estimate.
+	guess := new(big.Float).SetPrec(prec).SetInt64(1)
+
+	// We use t as a temporary variable. There's no need to set its precision
+	// since big.Float values with unset (== 0) precision automatically assume
+	// the largest precision of the arguments when used as the result (receiver)
+	// of a big.Float operation.
+	t := new(big.Float)
+
+	// Iterate.
+	for i := 0.0; i <= steps; i++ {
+		fmt.Println("calculating log2(10) * exp2(", i, ") (", int(math.Log2(10)*math.Exp2(i)), ") bits...")
+		t.Quo(ro, guess)   // t = 2.0 / guess_n
+		t.Add(guess, t)    // t = guess_n + (2.0 / guess_n)
+		guess.Mul(half, t) // guess_{n+1} = 0.5 * t
 	}
-	return z
-}
-
-func Digit(x float64) (int, float64) {
-	i := 10
-	z := 1.0 //our initital guess
-	for ; i > 0; i-- {
-		z = z - (z*z-x)/(2*z)
-	}
-	num := int(z)
-	rem := z
-	return num, rem
-}
-
-func square(n int64, precision int64) string {
-	ans_int := strconv.Itoa(int(math.Sqrt(float64(n))))
-
-	limit := new(big.Int).Exp(big.NewInt(10), big.NewInt(precision+1), nil)
-	a := big.NewInt(5 * n)
-	b := big.NewInt(5)
-	five := big.NewInt(5)
-	ten := big.NewInt(10)
-	hundred := big.NewInt(100)
-
-	for b.Cmp(limit) < 0 {
-		if a.Cmp(b) < 0 {
-			a.Mul(a, hundred)
-			tmp := new(big.Int).Div(b, ten)
-			tmp.Mul(tmp, hundred)
-			b.Add(tmp, five)
-		} else {
-			a.Sub(a, b)
-			b.Add(b, ten)
-		}
-	}
-	b.Div(b, hundred)
-
-	ans_dec := b.String()
-
-	return ans_dec[:len(ans_int)] + "." + ans_dec[len(ans_int):]
-}
-
-func newton(n float64, guess *big.Float) {
-	// *guess = *big.NewFloat(3.0) // replace a big float
-	// one := big.NewFloat(1.0)
-	// guess.Add(guess, one) // add to a big float
-	//
-	// one := big.NewFloat(1.0)
-	// guess.Add(guess, one) // add to a big float
-
-	rootOf := big.NewFloat(n)
-
-	// right parens are 2  * guess
-	rightParens := big.NewFloat(0.0)
-	rightParens.Copy(guess)
-	rightParens.Mul(rightParens, big.NewFloat(2.0))
-
-	// left parens are guess * guess minus rootOf
-	leftParens := big.NewFloat(0.0)
-	leftParens.Copy(guess)
-	leftParens.Mul(leftParens, guess)
-	leftParens.Sub(leftParens, rootOf)
-
-	// combine is left parens devided by right parens
-	combine := big.NewFloat(0.0)
-	combine.Quo(leftParens, rightParens)
-
-	//finally we subtract the right side of the equasion from our guess
-
-	guess.Sub(guess, combine)
+	return guess
 }
