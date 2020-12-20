@@ -5,11 +5,13 @@ import (
 	"math"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 )
 
 func main() {
-	answer := newt(2, 20)
+	rootOf, _ := strconv.ParseFloat(os.Args[1], 64)
+	answer := newt(rootOf, 15)
 	file, _ := os.Create("./sqrt.txt")
 	defer file.Close()
 	bigstr := fmt.Sprint(answer)
@@ -17,7 +19,7 @@ func main() {
 	var bignum, _ = new(big.Int).SetString(bigstr, 0)
 	bigstr = TextEncode(bignum.Text(26))
 	file.WriteString(bigstr)
-	fmt.Println(strings.Index(bigstr, "haku"))
+	fmt.Println(strings.Index(bigstr, os.Args[2]))
 }
 
 func TextEncode(x string) string {
