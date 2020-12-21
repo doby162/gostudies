@@ -30,13 +30,10 @@ func main() {
 }
 
 func guessToText(answer *big.Float) string {
-	file, _ := os.Create("./sqrt.txt")
-	defer file.Close()
 	bigstr := fmt.Sprint(answer)
 	bigstr = strings.Replace(bigstr, ".", "", 1)
 	var bignum, _ = new(big.Int).SetString(bigstr, 0)
 	bigstr = TextEncode(bignum.Text(26))
-	// file.WriteString(bigstr)
 	return bigstr
 }
 
