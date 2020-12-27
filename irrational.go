@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+    "github.com/meirf/gopart" // go get github.com/meirf/gopart
 )
 
 func main() {
@@ -32,39 +33,19 @@ func main() {
 func guessToText(answer *big.Float) string {
 	bigstr := fmt.Sprint(answer)
 	bigstr = strings.Replace(bigstr, ".", "", 1)
-	var bignum, _ = new(big.Int).SetString(bigstr, 0)
-	bigstr = TextEncode(bignum.Text(26))
+	bigstr = TextEncode(bigstr)
 	return bigstr
 }
 
 func TextEncode(x string) string {
-	x = strings.Replace(x, "p", "z", -1)
-	x = strings.Replace(x, "o", "y", -1)
-	x = strings.Replace(x, "n", "x", -1)
-	x = strings.Replace(x, "m", "w", -1)
-	x = strings.Replace(x, "l", "v", -1)
-	x = strings.Replace(x, "k", "u", -1)
-	x = strings.Replace(x, "j", "t", -1)
-	x = strings.Replace(x, "i", "s", -1)
-	x = strings.Replace(x, "h", "r", -1)
-	x = strings.Replace(x, "g", "q", -1)
-	x = strings.Replace(x, "f", "p", -1)
-	x = strings.Replace(x, "e", "o", -1)
-	x = strings.Replace(x, "d", "n", -1)
-	x = strings.Replace(x, "c", "m", -1)
-	x = strings.Replace(x, "b", "l", -1)
-	x = strings.Replace(x, "a", "k", -1)
-	x = strings.Replace(x, "9", "j", -1)
-	x = strings.Replace(x, "8", "i", -1)
-	x = strings.Replace(x, "7", "h", -1)
-	x = strings.Replace(x, "6", "g", -1)
-	x = strings.Replace(x, "5", "f", -1)
-	x = strings.Replace(x, "4", "e", -1)
-	x = strings.Replace(x, "3", "d", -1)
-	x = strings.Replace(x, "2", "c", -1)
-	x = strings.Replace(x, "1", "a", -1)
-	x = strings.Replace(x, "0", "a", -1)
-	return x
+    var charColl = [...]string {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+    ret := ""
+    for idxRange := range gopart.Partition(len(x), 2) {
+        n, _ := strconv.Atoi(x[idxRange.Low:idxRange.High])
+        n = n % len(charColl)
+        ret = ret + charColl[n]
+    }
+	return ret
 }
 
 func newt(rootOf float64, step float64, guess *big.Float) *big.Float {
